@@ -17,11 +17,11 @@ Start the Spring Boot API first (port 8080). Log in with an account whose role i
 
 | Page | Endpoints | Operations |
 |---|---|---|
-| Dashboard | `/orders`, `/products`, `/customers`, `/categories`, `/promos` | stats, 7-day revenue, status breakdown |
+| Dashboard | `/orders`, `/products`, `/customers`, `/categories`, `/reward-rules` | stats, 7-day revenue, status breakdown, active reward-rule count |
 | Orders | `GET /orders`, `PUT /admin/orders/{id}/status`, `DELETE /orders/{id}` | list, view, change status, delete (processing only) |
 | Products | `/products` (multipart), `/products/{id}/options`, `/product-options` | full CRUD + image upload, search/filter, sizes & add-ons (create, edit, show/hide) |
 | Categories | `/categories` (multipart) | full CRUD + image upload |
-| Promos | `/promos` | full CRUD + activate/deactivate |
+| Reward Rules | `/reward-rules`, `/reward-rules/{id}`, `/reward-rules/{id}/activate`, `/reward-rules/{id}/deactivate` | list all rules (including inactive), create, view/edit, activate/deactivate |
 | Customers | `GET /customers`, `PUT /customers/{id}` | list, edit |
 
 ## Notes
@@ -32,3 +32,5 @@ Start the Spring Boot API first (port 8080). Log in with an account whose role i
 - Not in the UI because the API has no endpoint for them: listing users, deleting customers
   (`DELETE /user/{id}` needs a user id that customers don't expose), deleting product options, and editing order items.
 - Dashboard revenue/status figures are computed from the latest 100 orders (there's no stats endpoint).
+- Reward-rule fields: `name`, `description`, `minimumQualifyingSubtotal`, `discountRate` (fraction, e.g. `0.10` = 10%), `minimumRedemptionSubtotal`, and `validityDays`. Updating a rule preserves its active state.
+- `/rewards/me` is customer-only and is intentionally not called by this admin dashboard.
