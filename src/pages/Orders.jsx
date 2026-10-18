@@ -97,7 +97,7 @@ export default function Orders() {
             </table>
             <dl className="ml-auto w-56 space-y-1.5">
               <div className="flex justify-between"><dt className="text-muted">Delivery</dt><dd>{money(view.deliveryFee)}</dd></div>
-              {view.discount > 0 && <div className="flex justify-between"><dt className="text-muted">Promo {view.promoCode}</dt><dd>−{money(view.discount)}</dd></div>}
+              {view.discount > 0 && <div className="flex justify-between"><dt className="text-muted">Discount</dt><dd>−{money(view.discount)}</dd></div>}
               <div className="flex justify-between border-t border-line pt-1.5 text-base font-bold"><dt>Total</dt><dd>{money(view.total)}</dd></div>
             </dl>
           </div>
