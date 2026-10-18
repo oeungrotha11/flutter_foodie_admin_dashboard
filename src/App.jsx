@@ -7,7 +7,7 @@ import Dashboard from './pages/Dashboard.jsx';
 import Orders from './pages/Orders.jsx';
 import Products from './pages/Products.jsx';
 import Categories from './pages/Categories.jsx';
-import Promos from './pages/Promos.jsx';
+import RewardRules from './pages/RewardRules.jsx';
 import Customers from './pages/Customers.jsx';
 
 function Protected({ children }) {
@@ -26,7 +26,7 @@ export default function App() {
         <Route path="orders" element={<Orders />} />
         <Route path="products" element={<Products />} />
         <Route path="categories" element={<Categories />} />
-        <Route path="promos" element={<Promos />} />
+        <Route path="reward-rules" element={<RewardRules />} />
         <Route path="customers" element={<Customers />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
