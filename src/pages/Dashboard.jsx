@@ -7,19 +7,19 @@ const dayKey = (d) => new Date(d).toISOString().slice(0, 10);
 
 export default function Dashboard() {
   const { data: d, loading, error, reload } = useFetch(async () => {
-    const [orders, products, customers, categories, promos] = await Promise.all([
+    const [orders, products, customers, categories, rewardRules] = await Promise.all([
       api.get('/orders', { params: { page: 1, size: 100, direction: 'DESC' } }),
       api.get('/products', { params: { page: 1, size: 1 } }),
       api.get('/customers', { params: { page: 1, size: 1 } }),
       api.get('/categories'),
-      api.get('/promos'),
+      api.get('/reward-rules'),
     ]);
     return {
       orders: paged(orders),
       products: paged(products).totalElements,
       customers: paged(customers).totalElements,
       categories: data(categories).length,
-      activePromos: data(promos).filter((p) => p.active).length,
+      activeRewardRules: data(rewardRules).filter((rule) => rule.active).length,
     };
   }, []);
 
@@ -88,7 +88,7 @@ export default function Dashboard() {
           <dl className="mt-6 grid grid-cols-3 gap-2 border-t border-line pt-4 text-center text-sm">
             <div><dt className="text-muted">Products</dt><dd className="font-bold">{d.products}</dd></div>
             <div><dt className="text-muted">Categories</dt><dd className="font-bold">{d.categories}</dd></div>
-            <div><dt className="text-muted">Live promos</dt><dd className="font-bold">{d.activePromos}</dd></div>
+            <div><dt className="text-muted">Active rules</dt><dd className="font-bold">{d.activeRewardRules}</dd></div>
           </dl>
         </Card>
       </div>
