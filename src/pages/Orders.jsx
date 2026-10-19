@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Eye, Trash2 } from 'lucide-react';
+import { Eye, Trash2, LockKeyhole } from 'lucide-react';
 import api, { paged } from '../lib/api.js';
 import { Badge, Button, Card, ConfirmDialog, Empty, ErrorBox, Modal, PageHeader, Pagination, Spinner, Td, Th, fmtDate, money, useFetch, useToast, cx } from '../components/ui.jsx';
 
@@ -11,7 +11,7 @@ export default function Orders() {
   const [direction, setDirection] = useState('DESC');
   const [view, setView] = useState(null);
   const [del, setDel] = useState(null);
-  const { data: res, loading, error, reload, setData } = useFetch(
+  const { data: res, loading, error, reload } = useFetch(
     () => api.get('/orders', { params: { page, size: SIZE, direction } }).then(paged), [page, direction]);
 
 
@@ -68,6 +68,28 @@ export default function Orders() {
               <span>{view.orderType} · {view.paymentMethod}</span>
               <span className="text-muted">Customer #{view.customerId}</span>
             </div>
+            <section className="rounded-xl border border-line bg-paper/50 p-4 space-y-2">
+              <div className="flex items-center gap-2 font-semibold">
+                <LockKeyhole className="size-4 text-muted" />
+                Order status
+              </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <Badge kind={view.status}>{view.status}</Badge>
+                <select
+                  aria-label="Order status"
+                  value={view.status}
+                  disabled
+                  className="rounded-lg border border-line bg-gray-100 px-3 py-2 text-sm text-muted disabled:cursor-not-allowed"
+                >
+                  <option value="processing">Processing</option>
+                  <option value="purchased">Purchased</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
+              <p className="text-xs text-muted">
+                Status changes are temporarily unavailable because the backend does not expose an order-status update endpoint. No status change will be sent or falsely reported as saved.
+              </p>
+            </section>
             {view.address && <p><span className="text-muted">Deliver to: </span>{view.address}</p>}
             <table className="w-full">
               <thead className="border-b border-line"><tr><Th className="px-0">Item</Th><Th>Qty</Th><Th>Unit</Th><Th className="text-right">Subtotal</Th></tr></thead>
