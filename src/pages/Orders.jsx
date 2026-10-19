@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Eye, Trash2, LockKeyhole } from 'lucide-react';
+import { Eye, Trash2, LockKeyhole, Save } from 'lucide-react';
 import api, { paged } from '../lib/api.js';
 import { Badge, Button, Card, ConfirmDialog, Empty, ErrorBox, Modal, PageHeader, Pagination, Spinner, Td, Th, fmtDate, money, useFetch, useToast, cx } from '../components/ui.jsx';
 
@@ -10,11 +10,34 @@ export default function Orders() {
   const [page, setPage] = useState(1);
   const [direction, setDirection] = useState('DESC');
   const [view, setView] = useState(null);
+  const [statusDraft, setStatusDraft] = useState('processing');
+  const [savingStatus, setSavingStatus] = useState(false);
   const [del, setDel] = useState(null);
   const { data: res, loading, error, reload } = useFetch(
     () => api.get('/orders', { params: { page, size: SIZE, direction } }).then(paged), [page, direction]);
 
 
+
+  const openOrder = (order) => {
+    setView(order);
+    setStatusDraft(order.status);
+  };
+
+  const updateStatus = async () => {
+    if (!view || view.status !== 'processing' || statusDraft === view.status) return;
+    setSavingStatus(true);
+    try {
+      // Admin status endpoint: PUT /api/v1/admin/orders/{id}/status
+      await api.put(`/admin/orders/${view.id}/status`, { status: statusDraft });
+      setView((current) => current ? { ...current, status: statusDraft } : current);
+      toast.success(`Order #${view.id} status updated to ${statusDraft}`);
+      reload();
+    } catch (e) {
+      toast.error(e.message || 'Could not update order status');
+    } finally {
+      setSavingStatus(false);
+    }
+  };
 
   const remove = async () => {
     try {
@@ -46,7 +69,7 @@ export default function Orders() {
                       <Td className="font-medium">{money(o.total)}</Td>
                       <Td><Badge kind={o.status}>{o.status}</Badge></Td>
                       <Td className="text-right">
-                        <Button variant="ghost" size="sm" aria-label="View order" onClick={() => setView(o)}><Eye className="size-4" /></Button>
+                        <Button variant="ghost" size="sm" aria-label="View order" onClick={() => openOrder(o)}><Eye className="size-4" /></Button>
                         <Button variant="ghost" size="sm" aria-label="Delete order" disabled={o.status !== 'processing'} onClick={() => setDel(o)}><Trash2 className="size-4" /></Button>
                       </Td>
                     </tr>
@@ -77,17 +100,28 @@ export default function Orders() {
                 <Badge kind={view.status}>{view.status}</Badge>
                 <select
                   aria-label="Order status"
-                  value={view.status}
-                  disabled
-                  className="rounded-lg border border-line bg-gray-100 px-3 py-2 text-sm text-muted disabled:cursor-not-allowed"
+                  value={statusDraft}
+                  disabled={savingStatus || view.status !== 'processing'}
+                  onChange={(e) => setStatusDraft(e.target.value)}
+                  className="rounded-lg border border-line bg-white px-3 py-2 text-sm disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-muted"
                 >
                   <option value="processing">Processing</option>
                   <option value="purchased">Purchased</option>
                   <option value="cancelled">Cancelled</option>
                 </select>
+                {view.status === 'processing' && (
+                  <Button
+                    size="sm"
+                    disabled={savingStatus || statusDraft === view.status}
+                    onClick={updateStatus}
+                  >
+                    <Save className="mr-1.5 size-4" />
+                    {savingStatus ? 'Saving…' : 'Save status'}
+                  </Button>
+                )}
               </div>
               <p className="text-xs text-muted">
-                Status changes are temporarily unavailable because the backend does not expose an order-status update endpoint. No status change will be sent or falsely reported as saved.
+                You can move a processing order to purchased or cancelled. Once changed, its status cannot be changed again.
               </p>
             </section>
             {view.address && <p><span className="text-muted">Deliver to: </span>{view.address}</p>}
