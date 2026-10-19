@@ -3,7 +3,6 @@ import { Eye, Trash2 } from 'lucide-react';
 import api, { paged } from '../lib/api.js';
 import { Badge, Button, Card, ConfirmDialog, Empty, ErrorBox, Modal, PageHeader, Pagination, Spinner, Td, Th, fmtDate, money, useFetch, useToast, cx } from '../components/ui.jsx';
 
-const STATUSES = ['processing', 'purchased', 'cancelled'];
 const SIZE = 10;
 
 export default function Orders() {
