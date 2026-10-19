@@ -140,6 +140,7 @@ function ProductForm({ product, categories, onClose, onSaved }) {
 function OptionsModal({ product, onClose }) {
   const toast = useToast();
   const { data: options, loading, error, reload } = useFetch(() => api.get(`/products/${product.productId}/options`).then(data), [product.productId]);
+  const optionList = options || [];
   const [form, setForm] = useState(null); // null | {optionName, optionType, price, extraPrice}
   const [busy, setBusy] = useState(false);
 
