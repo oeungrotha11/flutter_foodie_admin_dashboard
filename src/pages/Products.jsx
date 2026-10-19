@@ -139,44 +139,40 @@ function ProductForm({ product, categories, onClose, onSaved }) {
 
 function OptionsModal({ product, onClose }) {
   const toast = useToast();
-  const { data: all, loading, error, reload } = useFetch(() => api.get('/product-options').then(data), []);
-  const options = (all || []).filter((o) => o.productId === product.productId);
-  const [form, setForm] = useState(null); // null | {optionId?, optionName, optionType, extraPrice}
+  const { data: options, loading, error, reload } = useFetch(() => api.get(`/products/${product.productId}/options`).then(data), [product.productId]);
+  const [form, setForm] = useState(null); // null | {optionName, optionType, price, extraPrice}
   const [busy, setBusy] = useState(false);
 
   const save = async () => {
     setBusy(true);
-    const body = { optionName: form.optionName, optionType: form.optionType, extraPrice: Number(form.extraPrice) };
+    const body = {
+      optionName: form.optionName.trim(),
+      optionType: form.optionType,
+      price: form.optionType === 'SIZE' ? Number(form.price) : null,
+      extraPrice: form.optionType === 'ADD_ON' ? Number(form.extraPrice) : null,
+    };
     try {
-      form.optionId ? await api.put(`/product-options/${form.optionId}`, body) : await api.post(`/products/${product.productId}/options`, body);
-      toast.success('Option saved'); setForm(null); reload();
+      await api.post(`/products/${product.productId}/options`, body);
+      toast.success('Option created'); setForm(null); reload();
     } catch (e) { toast.error(e.details ? Object.values(e.details).join(' ') : e.message); }
     finally { setBusy(false); }
   };
 
-  const toggle = async (o) => {
-    try { await api.patch(`/product-options/${o.optionId}/${o.active ? 'deactivate' : 'activate'}`); reload(); }
-    catch (e) { toast.error(e.message); }
-  };
+
 
   return (
     <Modal open onClose={onClose} title={`Options · ${product.productName}`} wide>
-      {loading && !all ? <Spinner /> : error ? <ErrorBox error={error} onRetry={reload} /> : (
+      {loading && !options ? <Spinner /> : error ? <ErrorBox error={error} onRetry={reload} /> : (
         <div className="space-y-4">
-          {options.length === 0 ? <p className="text-sm text-muted">No sizes or add-ons yet.</p> : (
+          {optionList.length === 0 ? <p className="text-sm text-muted">No sizes or add-ons yet.</p> : (
             <table className="w-full text-sm">
-              <thead className="border-b border-line"><tr><Th className="px-0">Name</Th><Th>Type</Th><Th>Extra</Th><Th>Status</Th><Th className="text-right">Actions</Th></tr></thead>
+              <thead className="border-b border-line"><tr><Th className="px-0">Name</Th><Th>Type</Th><Th>Price</Th></tr></thead>
               <tbody className="divide-y divide-line">
-                {options.map((o) => (
+                {optionList.map((o) => (
                   <tr key={o.optionId}>
                     <Td className="px-0 font-medium">{o.optionName}</Td>
                     <Td>{o.optionType === 'SIZE' ? 'Size' : 'Add-on'}</Td>
-                    <Td>{money(o.extraPrice)}</Td>
-                    <Td><Badge kind={o.active ? 'active' : 'inactive'}>{o.active ? 'Active' : 'Hidden'}</Badge></Td>
-                    <Td className="text-right whitespace-nowrap">
-                      <Button variant="ghost" size="sm" onClick={() => setForm({ ...o })}>Edit</Button>
-                      <Button variant="ghost" size="sm" onClick={() => toggle(o)}>{o.active ? 'Hide' : 'Show'}</Button>
-                    </Td>
+                    <Td>{money(o.optionType === 'SIZE' ? o.price : o.extraPrice)}</Td>
                   </tr>
                 ))}
               </tbody>
@@ -187,11 +183,15 @@ function OptionsModal({ product, onClose }) {
             <div className="grid items-end gap-3 rounded-xl bg-paper p-4 sm:grid-cols-[1fr_auto_auto_auto]">
               <Field label="Name"><input className={inputCls} value={form.optionName} onChange={(e) => setForm({ ...form, optionName: e.target.value })} /></Field>
               <Field label="Type"><select className={inputCls} value={form.optionType} onChange={(e) => setForm({ ...form, optionType: e.target.value })}><option value="SIZE">Size</option><option value="ADD_ON">Add-on</option></select></Field>
-              <Field label="Extra price"><input type="number" min="0" step="0.01" className={cx(inputCls, 'w-28')} value={form.extraPrice} onChange={(e) => setForm({ ...form, extraPrice: e.target.value })} /></Field>
-              <div className="flex gap-2"><Button loading={busy} onClick={save}>Save</Button><Button variant="outline" onClick={() => setForm(null)}>Cancel</Button></div>
+              {form.optionType === 'SIZE' ? (
+                <Field label="Full size price"><input type="number" min="0.01" step="0.01" required className={cx(inputCls, 'w-28')} value={form.price ?? ''} onChange={(e) => setForm({ ...form, price: e.target.value })} /></Field>
+              ) : (
+                <Field label="Add-on price"><input type="number" min="0" step="0.01" required className={cx(inputCls, 'w-28')} value={form.extraPrice ?? ''} onChange={(e) => setForm({ ...form, extraPrice: e.target.value })} /></Field>
+              )}
+              <div className="flex gap-2"><Button loading={busy} onClick={save}>Create option</Button><Button variant="outline" onClick={() => setForm(null)}>Cancel</Button></div>
             </div>
           ) : (
-            <Button variant="outline" onClick={() => setForm({ optionName: '', optionType: 'SIZE', extraPrice: 0 })}><Plus className="size-4" />Add option</Button>
+            <Button variant="outline" onClick={() => setForm({ optionName: '', optionType: 'SIZE', price: '', extraPrice: '' })}><Plus className="size-4" />Add option</Button>
           )}
         </div>
       )}
