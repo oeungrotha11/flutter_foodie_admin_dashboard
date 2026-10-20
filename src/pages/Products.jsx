@@ -40,7 +40,7 @@ export default function Products() {
         </div>
         <select aria-label="Filter by category" value={category} onChange={(e) => setCategory(e.target.value)} className="rounded-lg border border-line bg-white px-3 py-2 text-sm">
           <option value="">All categories</option>
-          {(cats.data || []).map((c) => <option key={c.categoryId} value={c.categoryName}>{c.categoryName}</option>)}
+          {(cats.data || []).map((c) => <option key={c.categoryId} value={c.categoryId}>{c.categoryName}</option>)}
         </select>
       </div>
 
