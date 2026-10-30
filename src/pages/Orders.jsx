@@ -12,15 +12,37 @@ export default function Orders() {
   const [view, setView] = useState(null);
   const [statusDraft, setStatusDraft] = useState('processing');
   const [savingStatus, setSavingStatus] = useState(false);
+  const [drivers, setDrivers] = useState([]);
+  const [selectedDriver, setSelectedDriver] = useState('');
+  const [assigning, setAssigning] = useState(false);
   const [del, setDel] = useState(null);
   const { data: res, loading, error, reload } = useFetch(
     () => api.get('/orders', { params: { page, size: SIZE, direction } }).then(paged), [page, direction]);
 
 
 
-  const openOrder = (order) => {
+  const openOrder = async (order) => {
     setView(order);
     setStatusDraft(order.status);
+    setSelectedDriver('');
+    if (order.address && order.deliveryLatitude != null && order.deliveryLongitude != null) {
+      try {
+        const list = (await api.get('/admin/deliveries/drivers')).data?.payload || [];
+        setDrivers(list.filter((d) => d.approved && d.available));
+      } catch (e) { toast.error(e.message || 'Could not load available drivers'); }
+    }
+  };
+
+  const assignDriver = async () => {
+    if (!view || !selectedDriver) return;
+    setAssigning(true);
+    try {
+      await api.post('/admin/deliveries/assign', { orderId: view.id, driverUserId: Number(selectedDriver) });
+      toast.success('Driver assigned to this delivery');
+      setSelectedDriver('');
+      setDrivers((items) => items.filter((d) => String(d.userId) !== selectedDriver));
+    } catch (e) { toast.error(e.message || 'Could not assign driver'); }
+    finally { setAssigning(false); }
   };
 
   const updateStatus = async () => {
@@ -125,6 +147,22 @@ export default function Orders() {
               </p>
             </section>
             {view.address && <p><span className="text-muted">Deliver to: </span>{view.address}</p>}
+            {view.address && view.deliveryLatitude != null && view.deliveryLongitude != null && (
+              <section className="rounded-xl border border-line p-4 space-y-3">
+                <div className="font-semibold">Delivery assignment</div>
+                <p className="text-xs text-muted">Destination coordinates: {view.deliveryLatitude}, {view.deliveryLongitude}</p>
+                <div className="flex flex-wrap gap-2">
+                  <select aria-label="Available driver" value={selectedDriver} onChange={(e) => setSelectedDriver(e.target.value)}
+                    className="min-w-56 rounded-lg border border-line bg-white px-3 py-2">
+                    <option value="">Choose an approved, available driver</option>
+                    {drivers.map((d) => <option key={d.userId} value={d.userId}>{d.fullName || d.email} · {d.vehiclePlate || 'No plate'}</option>)}
+                  </select>
+                  <Button size="sm" disabled={!selectedDriver || assigning} onClick={assignDriver}>{assigning ? 'Assigning…' : 'Assign driver'}</Button>
+                </div>
+                {!drivers.length && <p className="text-xs text-muted">No approved and available drivers were found. Create and approve a driver first.</p>}
+              </section>
+            )}
+
             <table className="w-full">
               <thead className="border-b border-line"><tr><Th className="px-0">Item</Th><Th>Qty</Th><Th>Unit</Th><Th className="text-right">Subtotal</Th></tr></thead>
               <tbody className="divide-y divide-line">
