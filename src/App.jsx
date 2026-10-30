@@ -9,6 +9,7 @@ import Products from './pages/Products.jsx';
 import Categories from './pages/Categories.jsx';
 import RewardRules from './pages/RewardRules.jsx';
 import Customers from './pages/Customers.jsx';
+import Drivers from './pages/Drivers.jsx';
 
 function Protected({ children }) {
   const { user, booting } = useAuth();
@@ -28,6 +29,7 @@ export default function App() {
         <Route path="categories" element={<Categories />} />
         <Route path="reward-rules" element={<RewardRules />} />
         <Route path="customers" element={<Customers />} />
+        <Route path="drivers" element={<Drivers />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
