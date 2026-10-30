@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { LayoutDashboard, Package, Tags, ReceiptText, Users, Gift, LogOut, Menu, X, UtensilsCrossed } from 'lucide-react';
+import { LayoutDashboard, Package, Tags, ReceiptText, Users, Gift, Truck, LogOut, Menu, X, UtensilsCrossed } from 'lucide-react';
 import { useAuth } from '../lib/auth.jsx';
 import { cx } from './ui.jsx';
 
@@ -11,6 +11,7 @@ const nav = [
   { to: '/categories', label: 'Categories', icon: Tags },
   { to: '/reward-rules', label: 'Reward Rules', icon: Gift },
   { to: '/customers', label: 'Customers', icon: Users },
+  { to: '/drivers', label: 'Drivers', icon: Truck },
 ];
 
 export default function Layout() {
