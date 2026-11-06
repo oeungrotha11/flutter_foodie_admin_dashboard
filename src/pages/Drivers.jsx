@@ -58,7 +58,7 @@ export default function Drivers() {
             <td className="p-3"><div className="font-medium">{d.fullName || d.email}</div><div className="text-xs text-muted">{d.email}</div></td>
             <td className="p-3">{d.phoneNumber || '—'}</td><td className="p-3">{[d.vehicleType,d.vehiclePlate].filter(Boolean).join(' · ') || '—'}</td>
             <td className="p-3"><Badge kind={d.approved ? 'purchased' : 'processing'}>{d.approved ? 'Approved' : 'Pending'}</Badge></td>
-            <td className="p-3">{d.available ? 'Available' : 'Unavailable'}</td>
+            <td className="p-3">{d.available ? 'Online' : 'Offline'}</td>
             <td className="p-3 text-right"><Button size="sm" variant="secondary" onClick={() => approve(d,!d.approved)}><CheckCircle2 className="mr-1 size-4" />{d.approved ? 'Revoke' : 'Approve'}</Button></td>
           </tr>)}</tbody>
         </table></div>}
