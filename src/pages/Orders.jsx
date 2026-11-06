@@ -27,8 +27,8 @@ export default function Orders() {
     setSelectedDriver('');
     if (order.address && order.deliveryLatitude != null && order.deliveryLongitude != null) {
       try {
-        const list = (await api.get('/admin/deliveries/drivers')).data?.payload || [];
-        setDrivers(list.filter((d) => d.approved && d.available));
+        const list = (await api.get('/admin/deliveries/drivers/available')).data?.payload || [];
+        setDrivers(list);
       } catch (e) { toast.error(e.message || 'Could not load available drivers'); }
     }
   };
@@ -154,12 +154,12 @@ export default function Orders() {
                 <div className="flex flex-wrap gap-2">
                   <select aria-label="Available driver" value={selectedDriver} onChange={(e) => setSelectedDriver(e.target.value)}
                     className="min-w-56 rounded-lg border border-line bg-white px-3 py-2">
-                    <option value="">Choose an approved, available driver</option>
+                    <option value="">Choose an approved, online driver</option>
                     {drivers.map((d) => <option key={d.userId} value={d.userId}>{d.fullName || d.email} · {d.vehiclePlate || 'No plate'}</option>)}
                   </select>
                   <Button size="sm" disabled={!selectedDriver || assigning} onClick={assignDriver}>{assigning ? 'Assigning…' : 'Assign driver'}</Button>
                 </div>
-                {!drivers.length && <p className="text-xs text-muted">No approved and available drivers were found. Create and approve a driver first.</p>}
+                {!drivers.length && <p className="text-xs text-muted">No approved and online drivers are available. Ask an approved driver to switch Online in the driver app.</p>}
               </section>
             )}
 
